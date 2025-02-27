@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #define CURL_STATICLIB
 
@@ -8,8 +8,7 @@
 
 class DiscordWebhook {
 public:
-    // Parameters:
-    // - webhook_url: the discord HostingWebHook url
+
     DiscordWebhook(const char* webhook_url)
     {
         curl_global_init(CURL_GLOBAL_ALL);
@@ -17,7 +16,7 @@ public:
         if (curl) {
             curl_easy_setopt(curl, CURLOPT_URL, webhook_url);
 
-            // Discord webhooks accept json, so we set the content-type to json data.
+            // Discord webhooks accept json type messages, so we set the content-type to json data. (or smth i'm not the best)
             curl_slist* headers = curl_slist_append(NULL, "Content-Type: application/json");
             curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         }
@@ -39,10 +38,6 @@ public:
 
     inline bool send_message(const std::string& message)
     {
-        // The POST json data must be in this format:
-        // {
-        //      "content": "<MESSAGE HERE>"
-        // }
         std::string json = "{\"content\": \"" + message + "\"}";
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str());
 
@@ -50,6 +45,7 @@ public:
 
         return success;
     }
+
     inline bool send_embedjson(const std::string ajson)
     {
         std::string json = ajson.contains("embeds") ? ajson : "{\"embeds\": " + ajson + "}";
@@ -59,16 +55,34 @@ public:
 
         return success;
     }
+
     inline bool send_embed(const std::string& title, const std::string& description, int color = 0)
     {
-        std::string json = "{\"embeds\": [{\"title\": \"" + title + "\", \"description\": \"" + description + "\", \"color\": " + "\"" + std::to_string(color) + "\"}]}";
-        // std::cout << "json: " << json << '\n';
+        std::string json = "{\"embeds\": [{\"title\": \"" + title + "\", \"description\": \"" + description + "\", \"color\": " + std::to_string(color) + "}]}";
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str());
 
         bool success = handleCode(curl_easy_perform(curl));
 
         return success;
     }
+
+
+    // I don't know honestly do this work. I will push this update and let's see what is going to happen.
+    inline bool send_server_up_message()
+    {
+        std::string json = "{\"embeds\": [{"
+            "\"title\": \"Server Status\","
+            "\"description\": \"✅ The server is up, ready up to get ingame!\","
+            "\"color\": 3066993,"
+            "\"timestamp\": \"2024-01-01T00:00:00Z\""
+            "}]}";
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str());
+
+        bool success = handleCode(curl_easy_perform(curl));
+
+        return success;
+    }
+
 private:
     CURL* curl;
 };
